@@ -76,11 +76,33 @@ class SnakeGame {
       snakeColor,
     } = this.options;
 
-    // Drawing snake
+    // change snake position
+    this.move();
+
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < this.snake.length; i++) {
       this.ctx.fillStyle = snakeColor;
       this.ctx.fillRect(this.snake[i].x, this.snake[i].y, box, box);
+    }
+  }
+
+  move() {
+    const { direction } = this;
+
+    switch (direction) {
+      case DIRECTION.LEFT:
+        this.snake[0].x -= this.options.box;
+        break;
+      case DIRECTION.RIGHT:
+        this.snake[0].x += this.options.box;
+        break;
+      case DIRECTION.UP:
+        this.snake[0].y -= this.options.box;
+        break;
+      case DIRECTION.DOWN:
+        this.snake[0].y += this.options.box;
+        break;
+      default:
     }
   }
 }
