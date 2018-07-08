@@ -9,6 +9,8 @@ class SnakeGame {
       canvas: document.querySelector('#bwSnake'),
       width: 400,
       height: 400,
+      snakeWidth: 20,
+      snakeHeight: 20,
       bgColor: '#000',
     };
 
@@ -22,6 +24,7 @@ class SnakeGame {
 
   init() {
     this.createLevel();
+    this.createSnake();
   }
 
   createLevel() {
@@ -38,5 +41,9 @@ class SnakeGame {
     this.ctx = this.options.canvas.getContext('2d');
     this.ctx.fillStyle = this.options.bgColor;
     this.ctx.fillRect(0, 0, width, height);
+  }
+
+  createSnake() {
+    //
   }
 }
