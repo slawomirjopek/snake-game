@@ -1,3 +1,10 @@
+const DIRECTION = {
+  UP: 'up',
+  RIGHT: 'right',
+  DOWN: 'down',
+  LEFT: 'left',
+};
+
 // eslint-disable-next-line no-unused-vars
 class SnakeGame {
   constructor(options = {}) {
@@ -9,25 +16,45 @@ class SnakeGame {
       canvas: document.querySelector('#bwSnake'),
       width: 400,
       height: 400,
-      snakeWidth: 20,
-      snakeHeight: 20,
+      box: 20,
+      speed: 500,
       bgColor: '#000',
+      snakeColor: '#fff',
     };
 
     this.options = Object.assign({}, defaulOptions, options);
 
-    this.snake = [];
-    this.ctx = null;
+    this.snake = [{ x: 8 * this.options.box, y: 8 * this.options.box }];
+    this.ctx = null; // 2d canvas
+    this.game = null; // game loop
+    this.direction = DIRECTION.DOWN; // movement direction
 
     this.init();
   }
 
   init() {
-    this.createLevel();
-    this.createSnake();
+    // Attach snake steering
+    document.addEventListener('keydown', this.control.bind(this));
+
+    this.drawLevel();
+    this.game = setInterval(this.drawSnake.bind(this), this.options.speed);
   }
 
-  createLevel() {
+  control({ keyCode }) {
+    const { direction } = this;
+
+    if (keyCode === 37 && direction !== DIRECTION.RIGHT) { // left
+      this.direction = DIRECTION.LEFT;
+    } else if (keyCode === 39 && direction !== DIRECTION.LEFT) { // right
+      this.direction = DIRECTION.RIGHT;
+    } else if (keyCode === 38 && direction !== DIRECTION.DOWN) { // up
+      this.direction = DIRECTION.UP;
+    } else if (keyCode === 40 && direction !== DIRECTION.UP) { // down
+      this.direction = DIRECTION.DOWN;
+    }
+  }
+
+  drawLevel() {
     const {
       width,
       height,
@@ -43,7 +70,17 @@ class SnakeGame {
     this.ctx.fillRect(0, 0, width, height);
   }
 
-  createSnake() {
-    //
+  drawSnake() {
+    const {
+      box,
+      snakeColor,
+    } = this.options;
+
+    // Drawing snake
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < this.snake.length; i++) {
+      this.ctx.fillStyle = snakeColor;
+      this.ctx.fillRect(this.snake[i].x, this.snake[i].y, box, box);
+    }
   }
 }
