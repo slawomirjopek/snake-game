@@ -87,22 +87,41 @@ class SnakeGame {
   }
 
   move() {
-    const { direction } = this;
+    const {
+      direction,
+      options: {
+        box,
+      },
+    } = this;
+
+    const oldX = this.snake[0].x;
+    const oldY = this.snake[0].y;
+
+    let newX = oldX;
+    let newY = oldY;
 
     switch (direction) {
       case DIRECTION.LEFT:
-        this.snake[0].x -= this.options.box;
+        newX = oldX - box;
         break;
       case DIRECTION.RIGHT:
-        this.snake[0].x += this.options.box;
+        newX = oldX + box;
         break;
       case DIRECTION.UP:
-        this.snake[0].y -= this.options.box;
+        newY = oldY - box;
         break;
       case DIRECTION.DOWN:
-        this.snake[0].y += this.options.box;
+        newY = oldY + box;
         break;
       default:
     }
+
+    this.snake.unshift({
+      x: newX,
+      y: newY,
+    });
+    this.snake.pop();
+
+    console.log(this.snake);
   }
 }
