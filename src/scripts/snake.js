@@ -35,9 +35,7 @@ class SnakeGame {
   init() {
     // Attach snake steering
     document.addEventListener('keydown', this.control.bind(this));
-
-    this.drawLevel();
-    this.game = setInterval(this.drawSnake.bind(this), this.options.speed);
+    this.game = setInterval(this.draw.bind(this), this.options.speed);
   }
 
   control({ keyCode }) {
@@ -52,6 +50,12 @@ class SnakeGame {
     } else if (keyCode === 40 && direction !== DIRECTION.UP) { // down
       this.direction = DIRECTION.DOWN;
     }
+  }
+
+  draw() {
+    this.drawLevel();
+    this.drawSnake();
+    this.collision();
   }
 
   drawLevel() {
@@ -83,6 +87,30 @@ class SnakeGame {
     for (let i = 0; i < this.snake.length; i++) {
       this.ctx.fillStyle = snakeColor;
       this.ctx.fillRect(this.snake[i].x, this.snake[i].y, box, box);
+    }
+  }
+
+  collision() {
+    const {
+      snake,
+      options: {
+        width,
+        height,
+        box,
+      },
+    } = this;
+
+    console.log(snake[0].y);
+
+    // If reach "wall"
+    if (
+      snake[0].x > width - box
+      || snake[0].x < 0
+      || snake[0].y > height - box
+      || snake[0].y < 0
+    ) {
+      // stop game
+      console.log('gameover');
     }
   }
 
@@ -121,7 +149,5 @@ class SnakeGame {
       y: newY,
     });
     this.snake.pop();
-
-    console.log(this.snake);
   }
 }
