@@ -188,15 +188,20 @@ class SnakeGame {
     }
 
     // Check if collides with snake then generate new
-    this.snake.forEach((snake) => {
-      if (snake.x === x && snake.y === y) {
-        this.drawPointBox(true);
-      }
-    });
+    try {
+      this.snake.forEach((snake) => {
+        if (snake.x === x && snake.y === y) {
+          this.drawPointBox(true);
+          throw new Error(); // break loop
+        }
+      });
+    } catch (e) {
+      return false;
+    }
 
     this.pointBox = { x, y };
     this.ctx.fillStyle = pointBox;
-    this.ctx.fillRect(x, y, box, box);
+    return this.ctx.fillRect(x, y, box, box);
   }
 
   drawInfo() {
