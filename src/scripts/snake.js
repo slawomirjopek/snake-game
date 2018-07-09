@@ -24,6 +24,7 @@ class SnakeGame {
         infoBg: '#fff',
         infoText: 'red',
         scoreText: '#000',
+        pointBox: 'red',
       },
       font: {
         info: '15px Arial',
@@ -51,9 +52,11 @@ class SnakeGame {
     this.score = 0;
     this.scoreLimit = (this.options.width * this.options.height) / this.options.box;
     this.snake = [{ x: 8 * this.options.box, y: 8 * this.options.box }];
+    this.pointBox = { x: null, y: null };
     this.ctx = null; // 2d canvas
     this.game = null; // game loop
     this.direction = DIRECTION.DOWN; // movement direction
+    this.restartVisible = false;
   }
 
   attachEvents() {
@@ -90,7 +93,10 @@ class SnakeGame {
     };
 
     // restart
-    if ((pos.x > 175 && pos.x < 240) && (pos.y > 232 && pos.y < 242)) {
+    if (
+      this.restartVisible
+      && (pos.x > 175 && pos.x < 240) && (pos.y > 232 && pos.y < 242)
+    ) {
       this.score = 0;
       this.start();
     }
@@ -99,6 +105,7 @@ class SnakeGame {
   draw() {
     this.drawLevel();
     this.drawSnake();
+    this.drawPointBox();
     this.collision();
   }
 
@@ -139,6 +146,37 @@ class SnakeGame {
     }
   }
 
+  drawPointBox(generate = false) {
+    const {
+      width,
+      height,
+      box,
+      color: {
+        pointBox,
+      },
+    } = this.options;
+
+    let x = this.pointBox.x || Math.floor(Math.random() * width / box) * box;
+    let y = this.pointBox.y || Math.floor(Math.random() * height / box) * box;
+
+    if (generate) {
+      x = Math.floor(Math.random() * width / box) * box;
+      y = Math.floor(Math.random() * height / box) * box;
+    }
+
+    // Check if collides with snake then generate new
+    this.snake.forEach((snake) => {
+      if (snake.x === x && snake.y === y) {
+        this.drawPointBox(true);
+      }
+      return false;
+    });
+
+    this.pointBox = { x, y };
+    this.ctx.fillStyle = pointBox;
+    this.ctx.fillRect(x, y, box, box);
+  }
+
   drawInfo() {
     const {
       color: {
@@ -172,6 +210,7 @@ class SnakeGame {
     // restart
     this.ctx.font = font.restart;
     this.ctx.fillText(restart, 200, 235);
+    this.restartVisible = true;
   }
 
   collision() {
@@ -185,12 +224,9 @@ class SnakeGame {
     } = this;
 
     // If collided with self
-    const selfCollide = snake.find(({ x, y }, i) => {
-      if (i !== 0 && x === snake[0].x && y === snake[0].y) {
-        return true;
-      }
-      return false;
-    });
+    const selfCollide = snake.find(({ x, y }, i) => (
+      i !== 0 && x === snake[0].x && y === snake[0].y
+    ));
 
     // If reached "wall"
     if (
@@ -211,6 +247,7 @@ class SnakeGame {
       options: {
         box,
       },
+      pointBox,
     } = this;
 
     const oldX = this.snake[0].x;
@@ -239,7 +276,14 @@ class SnakeGame {
       x: newX,
       y: newY,
     });
-    this.snake.pop();
+
+    // When snake not eats
+    if (newX === pointBox.x && newY === pointBox.y) {
+      this.drawPointBox(true); // generate new pointbox
+      this.score = this.score + 1; // add point
+    } else {
+      this.snake.pop();
+    }
   }
 
   stop() {
