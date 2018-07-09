@@ -192,7 +192,6 @@ class SnakeGame {
       if (snake.x === x && snake.y === y) {
         this.drawPointBox(true);
       }
-      return false;
     });
 
     this.pointBox = { x, y };
