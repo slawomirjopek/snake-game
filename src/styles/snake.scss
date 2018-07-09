@@ -1,2 +1,14 @@
 @import url('https://fonts.googleapis.com/css?family=Oswald:200,300,400&subset=latin-ext');
 
+#bwSnake {
+  display: block;
+  margin: 50px auto 0 auto;
+}
+
+.info {
+  display: flex;
+  margin-top: 25px;
+  justify-content: center;
+  font-family: 'Oswald';
+  font-size: 20px;
+}

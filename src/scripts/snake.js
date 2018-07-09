@@ -21,15 +21,16 @@ class SnakeGame {
       color: {
         bg: '#000',
         snake: '#fff',
+        snakeHead: 'silver',
         infoBg: '#fff',
         infoText: 'red',
         scoreText: '#000',
         pointBox: 'red',
       },
       font: {
-        info: '15px Arial',
-        score: '30px Arial',
-        restart: '15px Arial',
+        info: '15px Oswald',
+        score: '30px Oswald',
+        restart: '15px Oswald',
       },
       text: {
         gameOver: 'GAMEOVER',
@@ -51,12 +52,17 @@ class SnakeGame {
   resetVars() {
     this.score = 0;
     this.scoreLimit = (this.options.width * this.options.height) / this.options.box;
-    this.snake = [{ x: 8 * this.options.box, y: 8 * this.options.box }];
+    this.snake = [
+      { x: 8 * this.options.box, y: 8 * this.options.box },
+      { x: 8 * this.options.box, y: 7 * this.options.box },
+      { x: 8 * this.options.box, y: 6 * this.options.box },
+    ];
     this.pointBox = { x: null, y: null };
     this.ctx = null; // 2d canvas
     this.game = null; // game loop
     this.direction = DIRECTION.DOWN; // movement direction
     this.restartVisible = false;
+    this.directionLock = false;
   }
 
   attachEvents() {
@@ -73,7 +79,12 @@ class SnakeGame {
   }
 
   control({ keyCode }) {
-    const { direction } = this;
+    const {
+      direction,
+      directionLock,
+    } = this;
+
+    if (directionLock) return;
 
     if (keyCode === 37 && direction !== DIRECTION.RIGHT) { // left
       this.direction = DIRECTION.LEFT;
@@ -84,18 +95,20 @@ class SnakeGame {
     } else if (keyCode === 40 && direction !== DIRECTION.UP) { // down
       this.direction = DIRECTION.DOWN;
     }
+
+    this.directionLock = true;
   }
 
   clickHandler(e) {
     const pos = {
-      x: e.clientX,
-      y: e.clientY,
+      x: e.offsetX,
+      y: e.offsetY,
     };
 
     // restart
     if (
       this.restartVisible
-      && (pos.x > 175 && pos.x < 240) && (pos.y > 232 && pos.y < 242)
+      && (pos.x > 175 && pos.x < 225) && (pos.y > 220 && pos.y < 235)
     ) {
       this.score = 0;
       this.start();
@@ -103,6 +116,9 @@ class SnakeGame {
   }
 
   draw() {
+    // prevent changing direction multiple times in one cycle
+    this.directionLock = false;
+
     this.drawLevel();
     this.drawSnake();
     this.drawPointBox();
@@ -133,6 +149,7 @@ class SnakeGame {
       box,
       color: {
         snake,
+        snakeHead,
       },
     } = this.options;
 
@@ -141,7 +158,7 @@ class SnakeGame {
 
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < this.snake.length; i++) {
-      this.ctx.fillStyle = snake;
+      this.ctx.fillStyle = i === 0 ? snake : snakeHead;
       this.ctx.fillRect(this.snake[i].x, this.snake[i].y, box, box);
     }
   }
@@ -156,12 +173,18 @@ class SnakeGame {
       },
     } = this.options;
 
-    let x = this.pointBox.x || Math.floor(Math.random() * width / box) * box;
-    let y = this.pointBox.y || Math.floor(Math.random() * height / box) * box;
+    let x;
+    let y;
 
     if (generate) {
       x = Math.floor(Math.random() * width / box) * box;
       y = Math.floor(Math.random() * height / box) * box;
+    } else {
+      x = (this.pointBox.x === 0 || this.pointBox.x)
+        ? this.pointBox.x : Math.floor(Math.random() * width / box) * box;
+
+      y = (this.pointBox.y === 0 || this.pointBox.y)
+        ? this.pointBox.y : Math.floor(Math.random() * height / box) * box;
     }
 
     // Check if collides with snake then generate new
