@@ -17,24 +17,55 @@ class SnakeGame {
       width: 400,
       height: 400,
       box: 20,
-      speed: 500,
-      bgColor: '#000',
-      snakeColor: '#fff',
+      speed: 100,
+      color: {
+        bg: '#000',
+        snake: '#fff',
+        infoBg: '#fff',
+        infoText: 'red',
+        scoreText: '#000',
+      },
+      font: {
+        info: '15px Arial',
+        score: '30px Arial',
+        restart: '15px Arial',
+      },
+      text: {
+        gameOver: 'GAMEOVER',
+        winner: 'MAXPOINTS!',
+        restart: 'RESTART',
+      },
     };
 
     this.options = Object.assign({}, defaulOptions, options);
+    this.init(); // initialize game
+  }
 
+  init() {
+    this.resetVars();
+    this.attachEvents();
+    this.start();
+  }
+
+  resetVars() {
+    this.score = 0;
+    this.scoreLimit = (this.options.width * this.options.height) / this.options.box;
     this.snake = [{ x: 8 * this.options.box, y: 8 * this.options.box }];
     this.ctx = null; // 2d canvas
     this.game = null; // game loop
     this.direction = DIRECTION.DOWN; // movement direction
-
-    this.init();
   }
 
-  init() {
+  attachEvents() {
     // Attach snake steering
     document.addEventListener('keydown', this.control.bind(this));
+
+    // Click events
+    document.addEventListener('click', this.clickHandler.bind(this));
+  }
+
+  start() {
+    this.resetVars();
     this.game = setInterval(this.draw.bind(this), this.options.speed);
   }
 
@@ -52,6 +83,19 @@ class SnakeGame {
     }
   }
 
+  clickHandler(e) {
+    const pos = {
+      x: e.clientX,
+      y: e.clientY,
+    };
+
+    // restart
+    if ((pos.x > 175 && pos.x < 240) && (pos.y > 232 && pos.y < 242)) {
+      this.score = 0;
+      this.start();
+    }
+  }
+
   draw() {
     this.drawLevel();
     this.drawSnake();
@@ -62,6 +106,9 @@ class SnakeGame {
     const {
       width,
       height,
+      color: {
+        bg,
+      },
     } = this.options;
 
     // Sets game dimensions
@@ -70,14 +117,16 @@ class SnakeGame {
 
     // Sets game background color
     this.ctx = this.options.canvas.getContext('2d');
-    this.ctx.fillStyle = this.options.bgColor;
+    this.ctx.fillStyle = bg;
     this.ctx.fillRect(0, 0, width, height);
   }
 
   drawSnake() {
     const {
       box,
-      snakeColor,
+      color: {
+        snake,
+      },
     } = this.options;
 
     // change snake position
@@ -85,9 +134,44 @@ class SnakeGame {
 
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < this.snake.length; i++) {
-      this.ctx.fillStyle = snakeColor;
+      this.ctx.fillStyle = snake;
       this.ctx.fillRect(this.snake[i].x, this.snake[i].y, box, box);
     }
+  }
+
+  drawInfo() {
+    const {
+      color: {
+        infoBg,
+        infoText,
+        scoreText,
+      },
+      font,
+      text: {
+        gameOver,
+        winner,
+        restart,
+      },
+    } = this.options;
+
+    this.ctx.fillStyle = infoBg;
+    this.ctx.fillRect(100, 150, 200, 100);
+    this.ctx.font = font.info;
+    this.ctx.fillStyle = infoText;
+    this.ctx.textAlign = 'center';
+
+    // Sets the appropriate message
+    const message = this.score !== this.scoreLimit ? gameOver : winner;
+    this.ctx.fillText(message, 200, 175);
+
+    // score info
+    this.ctx.font = font.score;
+    this.ctx.fillStyle = scoreText;
+    this.ctx.fillText(this.score, 200, 210);
+
+    // restart
+    this.ctx.font = font.restart;
+    this.ctx.fillText(restart, 200, 235);
   }
 
   collision() {
@@ -100,17 +184,24 @@ class SnakeGame {
       },
     } = this;
 
-    console.log(snake[0].y);
+    // If collided with self
+    const selfCollide = snake.find(({ x, y }, i) => {
+      if (i !== 0 && x === snake[0].x && y === snake[0].y) {
+        return true;
+      }
+      return false;
+    });
 
-    // If reach "wall"
+    // If reached "wall"
     if (
       snake[0].x > width - box
       || snake[0].x < 0
       || snake[0].y > height - box
       || snake[0].y < 0
+      || selfCollide
     ) {
       // stop game
-      console.log('gameover');
+      this.stop();
     }
   }
 
@@ -149,5 +240,10 @@ class SnakeGame {
       y: newY,
     });
     this.snake.pop();
+  }
+
+  stop() {
+    clearInterval(this.game);
+    this.drawInfo();
   }
 }
